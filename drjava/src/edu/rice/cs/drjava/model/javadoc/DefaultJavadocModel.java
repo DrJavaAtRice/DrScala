@@ -75,6 +75,10 @@ import edu.rice.cs.util.OperationCanceledException;
 
 import static edu.rice.cs.plt.debug.DebugUtil.error;
 
+
+import edu.rice.cs.plt.reflect.ReflectUtil;
+import static edu.rice.cs.plt.io.IOUtil.attemptAbsoluteFiles;
+
 /** Default implementation of JavadocModel interface; generates Javadoc HTML files for a set of documents.
   * @version $Id: DefaultJavadocModel.java 5751 2013-02-06 10:32:04Z rcartwright $
   */
@@ -395,17 +399,18 @@ public class DefaultJavadocModel implements JavadocModel {
   private void _runJavadoc(Iterable<String> files, final File destDir, Iterable<String> extraArgs, final boolean allDocs) {    
     Iterable<String> args = IterUtil.empty();
     args = IterUtil.compose(args, IterUtil.make("-d", destDir.getPath()));
-    args = IterUtil.compose(args, IterUtil.make("-classpath", IOUtil.pathToString(_model.getClassPath())));
+    // args = IterUtil.compose(args, IterUtil.make("-classpath", "/Users/matt/Documents/semester7/comp402/DrScala/drjava/drscala.jar"));
     args = IterUtil.compose(args, _getLinkArgs());
-    args = IterUtil.compose(args, "-" + DrJava.getConfig().getSetting(OptionConstants.JAVADOC_ACCESS_LEVEL));
+
+    // args = IterUtil.compose(args, "-" + DrJava.getConfig().getSetting(OptionConstants.JAVADOC_ACCESS_LEVEL));
     args = IterUtil.compose(args, extraArgs);
-    String custom = DrJava.getConfig().getSetting(OptionConstants.JAVADOC_CUSTOM_PARAMS);
-    args = IterUtil.compose(args, ArgumentTokenizer.tokenize(custom));
+    // String custom = DrJava.getConfig().getSetting(OptionConstants.SCALADOC_CUSTOM_PARAMS);
+    // args = IterUtil.compose(args, ArgumentTokenizer.tokenize(custom));
     args = IterUtil.compose(args, files);
     
     List<DJError> errors = new ArrayList<DJError>();
     try {
-      Process p = _jvmBuilder.start("scala.tools.nsc.ScalaDoc", args);
+      Process p = _jvmBuilder.startScalaProcess("scala.tools.nsc.ScalaDoc", args);
       Thunk<String> outputString = ConcurrentUtil.processOutAsString(p);
       Thunk<String> errorString = ConcurrentUtil.processErrAsString(p);
       p.waitFor();

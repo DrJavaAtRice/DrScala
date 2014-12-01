@@ -943,7 +943,7 @@
   
   <!-- Sets svn-revision to the current "Last Changed Rev" of "svn info". -->
   <target name="resolve-svn-revision">
-    <exec executable="svn" failonerror="yes" output="svn-info.txt">
+  <!--   <exec executable="svn" failonerror="yes" output="svn-info.txt">
       <arg value="info" />
     </exec>
     <loadfile property="svn-revision" srcfile="svn-info.txt">
@@ -955,7 +955,7 @@
         <striplinebreaks/>
       </filterchain>
     </loadfile>
-    <delete file="svn-info.txt" />
+    <delete file="svn-info.txt" /> -->
   </target>
   
 
