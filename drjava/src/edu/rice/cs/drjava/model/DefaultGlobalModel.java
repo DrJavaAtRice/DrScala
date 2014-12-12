@@ -670,9 +670,14 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
       * @exception ClassNameNotFoundException propagated from getFirstTopLevelClass()
       * @exception IOException propagated from GlobalModel.compileAll()
       */
+    // public void runMain(String qualifiedClassName) throws ClassNameNotFoundException, IOException {
+    //   _runInInteractions("java {0}", qualifiedClassName);
+    // }
     public void runMain(String qualifiedClassName) throws ClassNameNotFoundException, IOException {
-      _runInInteractions("java {0}", qualifiedClassName);
+      // runs the main method of the standalone singleton object in this document, with {0} indicating the place where the object name will be written
+      _runInInteractions("{0}.main(null)", qualifiedClassName);
     }
+
     
     /** Runs this document as applet in the interactions pane after resetting interactions with the source
       * root for this document as the working directory.  Warns the use if the class files for the doucment are not 
