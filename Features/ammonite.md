@@ -47,5 +47,4 @@ java.lang.ClassNotFoundException: ammonite.$file.tmp$Ob$
   java.lang.ClassLoader.loadClass(ClassLoader.java:357)
   ammonite.$sess.cmd5$.<init>(cmd5.sc:1)
   ammonite.$sess.cmd5$.<clinit>(cmd5.sc)
-@
 ```
