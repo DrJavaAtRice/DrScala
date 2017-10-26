@@ -3,7 +3,7 @@
 <!-- This build script is based on the template located at "trunk/misc/build-template.xml"
      in the DrJava Subversion repository.  In general, changes made to the script should be
      reflected in the template as well. -->
-     
+
 <project name="plt" default="help">
 
   <property name="readable-project-name" value="PLT Utilities" />
@@ -26,22 +26,22 @@
   <property name="plt.debug.log" value="${debug}" />
   <property name="error" value="stderr" />
   <property name="plt.error.log" value="${error}" />
-  <property name="clean-can-fail" value="yes" /> 
+  <property name="clean-can-fail" value="yes" />
   <property name="link-source" value="no" />
-  
+
   <!-- *** Environment properties that are not needed may be removed *** -->
   <property environment="env" />
   <property name="drjava-jar" value="${env.DRJAVA_JAR}" />
   <property name="java8-home" value="${env.JAVA8_HOME}" />
   <property name="clover-jar" value="${env.CLOVER_JAR}" />
   <property name="findbugs-home" value="${env.FINDBUGS_HOME}" />
-  
+
   <property name="is-development" value="yes" /> <!-- Development or stable release -->
   <property name="tag-append" value="" /> <!-- "stable", "beta", or none -->
-  
+
   <!-- Don't use or inherit the CLASSPATH environment variable for anything -->
   <property name="build.sysclasspath" value="ignore" />
-  
+
   <!-- Extension that defines the "extendclasspath" task.  This should be a standard feature of Ant, but
        as long as it's not, we can use this extension from the Clover developers. -->
   <taskdef resource="com/cenqua/ant/antlib.xml" classpath="lib/buildlib/cenquatasks.jar" />
@@ -51,17 +51,17 @@
 
   <!-- fornum task, used for test-repeat -->
   <taskdef name="fornum" classname="edu.rice.cs.plt.ant.ForNumTask" classpath="lib/buildlib/plt-ant.jar" onerror="report" />
-  
+
   <extendclasspath path="lib/buildlib/junit.jar" />
 
   <fileset id="libs" dir="lib" includes="*.jar" /> <!-- Only include jars that are at the top level (not in buildlib) -->
-  
-  
-  
+
+
+
   <!-- ************
        Help Targets
        ************ -->
-  
+
   <target name="help" description="Print general build script information">
     <echo message="----------------------------------------------------------------------" />
     <echo message="${readable-project-name} Build Scripts" />
@@ -85,7 +85,7 @@
     <echo message="CLASSPATH will be ignored -- classes on the system class path will " />
     <echo message="not be visible during the build process." />
   </target>
-  
+
   <target name="options" description="Print the list of customizable options">
     <echo message="----------------------------------------------------------------------" />
     <echo message="${readable-project-name} Build Script Customizable Options" />
@@ -125,36 +125,36 @@
     <echo message="       stderr)" />
   </target>
 
-  
-  
+
+
   <!-- ************
        Build Target
        ************ -->
-  
+
   <target name="build" depends="test, jar" description="Shortcut for 'test' and 'jar'">
   </target>
-  
+
 
   <!-- *******************
        Compilation Targets
        ******************* -->
-       
+
   <target name="compile" depends="do-compile, copy-resources, unjar-libs"
           description="Compile all source files">
   </target>
-  
+
   <target name="do-compile" depends="resolve-java8-runtime, assert-drjava-jar-exists">
-  
+
     <echo message="Compiling src directory to classes/base and classes/test with command 'javac'" />
-    
+
     <mkdir dir="classes/base" />
     <mkdir dir="classes/test" />
-    
+
     <!-- Move any test classes back to base to prevent recompilation -->
     <move todir="classes/base">
       <fileset dir="classes/test" includes="**/*" />
     </move>
-    
+
     <javac srcdir="src" destdir="classes/base" source="1.6" target="1.6"
            bootclasspath="${java8-runtime}" sourcepath="" includeAntRuntime="no"
            executable="javac" fork="yes" memoryMaximumSize="512M"
@@ -167,13 +167,13 @@
       </classpath>
       <compilerarg value="-Xlint" />
       <!-- Ignore serial warnings, because they occur for every Throwable definition (among others) -->
-      <compilerarg value="-Xlint:-serial" /> 
+      <compilerarg value="-Xlint:-serial" />
       <!-- Use the next line to compile against other sources, ignoring any unneeded classes.
            This can be useful in creating a pruned version of a jar file for the lib directory.
            (You must also clear the sourcepath="" option.)
       <include name="${src-working-dir}/**/*.java" /> -->
     </javac>
-    
+
     <mkdir dir="classes/test" /> <!-- May be deleted by the previous move -->
     <move todir="classes/test">
       <fileset dir="classes/base">
@@ -184,10 +184,10 @@
         <!-- Additional test classes should be listed here -->
       </fileset>
     </move>
-    
+
   </target>
-  
-    
+
+
   <target name="copy-resources">
     <copy todir="classes/base">
       <fileset dir="src">
@@ -202,15 +202,15 @@
       </fileset>
     </copy>
   </target>
-  
-  
+
+
   <target name="unjar-libs">
     <antcall target="do-unjar-libs">
       <param name="generate-sourcedir" value="lib" />
       <param name="generate-dir" value="classes/lib" />
     </antcall>
   </target>
-  
+
   <target name="do-unjar-libs" depends="check-generate-dir-from-dir" unless="already-generated">
     <echo message="Unjarring jar files in the lib directory" />
     <!-- Delete "classes/lib" in case it exists (but is out of date) -->
@@ -221,13 +221,13 @@
       <patternset excludes="META-INF/**" />
     </unjar>
   </target>
-  
-  
+
+
 
   <!-- ***************
        Testing Targets
        *************** -->
-  
+
   <target name="test" depends="compile" unless="skip-test"
           description="Run all tests (after compiling); use -Dtest-spec=... to filter">
     <antcall target="iterate-tests">
@@ -254,12 +254,12 @@
     <condition property="test-output-to-file" value="yes" else="no">
       <equals arg1="${test-formatter}" arg2="xml" />
     </condition>
-    
+
     <!-- Repeat tests 'test-repeat' times. -->
     <fornum count="${test-repeat}" param="iteration">
       <sequential>
         <trycatch property="test-failure" reference="test-failure-ref">
-        
+
           <try>
             <for list="${test-spec}" param="test-filter-string-iter">
               <sequential>
@@ -277,7 +277,7 @@
               </then>
             </if>
           </try>
-          
+
           <catch>
             <if>
               <istrue value="${test-halt}" />
@@ -286,7 +286,7 @@
               </then>
             </if>
           </catch>
-          
+
           <finally>
             <if>
               <istrue value="${test-output-to-file}" />
@@ -299,9 +299,9 @@
               </then>
             </if>
           </finally>
-          
+
         </trycatch>
-        
+
         <if>
           <isset property="test-iteration-message" />
           <then>
@@ -311,10 +311,10 @@
             <echo message="Completed test iteration ${iteration1} of ${test-repeat}" />
           </then>
         </if>
-        
+
       </sequential>
     </fornum>
-    
+
     <!-- Handle errors where test-halt is false -->
     <if>
       <isset property="test-failure" />
@@ -323,10 +323,10 @@
         <throw refid="test-failure-ref" />
       </then>
     </if>
-    
+
   </target>
-  
-  
+
+
   <target name="do-test" depends="resolve-jvm-args">
     <echo message="Running all tests matching '${test-filter-string}' with command '${test-jvm}'" />
     <junit haltonfailure="${test-halt}" failureproperty="test-failed"
@@ -364,8 +364,8 @@
   <!-- ***********
        Jar Targets
        *********** -->
-       
-  <target name="jar" depends="compile, resolve-version-tag" 
+
+  <target name="jar" depends="compile, resolve-version-tag"
           description="Create the jar file with all classes and libs (compiling first)">
     <jar jarfile="${ant.project.name}.jar">
       <manifest>
@@ -377,7 +377,7 @@
     </jar>
   </target>
 
-  <target name="jar-base" depends="compile, resolve-version-tag" 
+  <target name="jar-base" depends="compile, resolve-version-tag"
           description="Create the jar file without any support libs (compiling first)">
     <jar jarfile="${ant.project.name}-base.jar">
       <manifest>
@@ -393,7 +393,7 @@
   <!-- *********************
        Documentation Targets
        ********************* -->
-  
+
   <target name="javadoc" depends="resolve-version-tag"
           description="Generate javadocs from the source folder">
     <antcall target="do-javadoc">
@@ -401,7 +401,7 @@
       <param name="generate-dir" value="docs/javadoc" />
     </antcall>
   </target>
-  
+
   <target name="do-javadoc" depends="check-generate-dir-from-dir" unless="already-generated">
     <echo message="Generating javadocs" />
     <delete dir="docs/javadoc" />
@@ -417,11 +417,11 @@
       <!-- Additional external library APIs may be listed here -->
     </javadoc>
   </target>
-  
-  
-  <target name="clover" depends="clean, setup-clover, test, report-clover" 
+
+
+  <target name="clover" depends="clean, setup-clover, test, report-clover"
           description="Generate a Clover test coverage report" />
-  
+
   <target name="report-clover" depends="resolve-version-tag">
     <echo message="Generating Clover report" />
     <clover-report>
@@ -478,18 +478,18 @@
   </target>
 
 
-  
+
   <!-- *************
        Clean Targets
        ************* -->
-       
+
   <target name="clean" depends="clean-intermediate, clean-products"
           description="Remove all build products; the result should match the intended Subversion contents">
   </target>
 
   <target name="clean-intermediate" unless="skip-clean">
     <echo message="Deleting all intermediate build products" />
-    
+
     <delete dir="classes" failonerror="${clean-can-fail}" />
     <delete dir="cloverdb" failonerror="${clean-can-fail}" />
 
@@ -508,15 +508,15 @@
         <!-- Additional files to delete may be listed here -->
       </fileset>
     </delete>
-    
+
   </target>
-  
+
   <target name="clean-products" unless="skip-clean">
     <echo message="Deleting all final build products" />
-    
+
     <delete dir="docs" failonerror="${clean-can-fail}" />
     <delete dir="testResults" failonerror="${clean-can-fail}" />
-    
+
     <delete includeemptydirs="true" failonerror="${clean-can-fail}">
       <fileset dir="${basedir}" defaultexcludes="no">
         <include name="*.jar" />
@@ -525,15 +525,15 @@
         <include name="*.exe" />
       </fileset>
     </delete>
-    
+
   </target>
 
 
 
   <!-- ******************
-       Subversion Targets 
+       Subversion Targets
        ****************** -->
-  
+
   <target name="update" depends="clean" description="Reconcile source with the Subversion archive">
     <echo message="Running Subversion update" />
     <exec executable="svn" failonerror="yes">
@@ -543,8 +543,8 @@
       <arg value="status" />
     </exec>
   </target>
-  
-  <target name="commit" depends="update, build" 
+
+  <target name="commit" depends="update, build"
           description="Commit source to the Subversion archive (after building)">
     <antcall target="clean-intermediate"> <!-- Clean up after the latest build -->
       <param name="clean-can-fail" value="no" />
@@ -573,8 +573,8 @@
       <arg value="Created tag ${version-tag}" />
     </exec>
   </target>
-  
-  <target name="branch" depends="update" 
+
+  <target name="branch" depends="update"
           description="Copy the working copy to a new Subversion branch (after updating)">
     <echo message="This will create a new branch from your working copy.  If there are changes " />
     <echo message="in your copy that have not been committed, you may want to do so first, " />
@@ -595,7 +595,7 @@
   <!-- ***************
        Release Targets
        *************** -->
-       
+
   <target name="release-stable" description="Make a 'stable' version release">
     <antcall target="release">
       <param name="tag-append" value="-stable" />
@@ -609,7 +609,7 @@
       <param name="is-development" value="no" />
     </antcall>
   </target>
-       
+
   <target name="release-local-stable" description="Make a 'stable' version release without touching Subversion">
     <antcall target="release">
       <param name="tag-append" value="-stable" />
@@ -625,19 +625,19 @@
       <param name="skip-tag" value="yes" />
     </antcall>
   </target>
-       
+
   <target name="release-local" description="Make a development release without touching Subversion">
     <antcall target="release">
       <param name="skip-tag" value="yes" />
     </antcall>
   </target>
-       
+
   <target name="release"
-          depends="update, build, tag, src-zip, jar-app, javadoc-zip" 
+          depends="update, build, tag, src-zip, jar-app, javadoc-zip"
           description="Make a development release">
     <delete dir="${version-tag}" />
   </target>
-  
+
   <target name="src-zip" depends="resolve-version-tag" unless="skip-tag">
     <echo message="Creating ${version-tag}-src.zip" />
     <exec executable="svn" failonerror="yes">
@@ -649,7 +649,7 @@
       <zipfileset dir="${version-tag}/src" prefix="${version-tag}/src" />
     </zip>
   </target>
-  
+
   <target name="jar-app" depends="jar, assert-jar-exists, resolve-version-tag">
     <echo message="Creating ${version-tag}.jar" />
     <copy file="${ant.project.name}.jar" tofile="${version-tag}.jar" />
@@ -661,7 +661,7 @@
       <zipfileset dir="docs/javadoc" prefix="${version-tag}/javadoc" />
     </zip>
   </target>
-  
+
   <!-- We don't include this in the standard release process, because we don't want to
        include instrumented files in the release, and because Clover must be run on a
        licensed machine -->
@@ -677,7 +677,7 @@
   <!-- ********************************
        Misc Occasionally-Useful Targets
        ******************************** -->
-  
+
   <patternset id="exclude-binaries">
     <exclude name="**/*.jar" />
     <exclude name="**/*.class" />
@@ -698,8 +698,8 @@
       <patternset refid="exclude-binaries" />
     </replace>
   </target>
-  
-  <!-- Standardize all newline character sequences.  Subversion takes care of this 
+
+  <!-- Standardize all newline character sequences.  Subversion takes care of this
        automatically, but sometimes files crop up with the wrong sequence.
        Use "svn status" after running this to see which files were fixed. -->
   <target name="fix-newlines" description="Standardize newline character sequences in all text files">
@@ -713,7 +713,7 @@
       <patternset refid="exclude-binaries" />
     </fixcrlf>
   </target>
-  
+
   <!-- Replace the header of each .java source file with the contents of LICENSE, delimited by
        BEGIN_COPYRIGHT_BLOCK and END_COPYRIGHT_BLOCK. -->
   <target name="relicense" description="Paste the contents of LICENSE in all Java source files">
@@ -733,10 +733,10 @@
     </replaceregexp>
   </target>
 
-  
-  
+
+
   <!-- ***************************
-       Property-resolution Targets 
+       Property-resolution Targets
        *************************** -->
 
   <target name="resolve-java8-runtime">
@@ -754,7 +754,7 @@
 
     <fail message="Can't find rt.jar in the Java 8 home: ${java8-home}" unless="java8-runtime" />
   </target>
-  
+
   <target name="resolve-java8-exec">
     <!-- We rely on "location" to generate a platform-specific path -->
 
@@ -765,13 +765,13 @@
         <os family="windows" />
       </and>
     </condition>
-    
+
     <property name="java8-exec-2" location="${java8-home}/bin/java" />
     <available property="java8-exec" value="${java8-exec-2}" file="${java8-exec-2}" />
 
     <fail message="Can't find the java executable in the Java 8 home: ${java8-home}" unless="java8-exec" />
   </target>
-  
+
   <target name="assert-drjava-jar-exists">
     <available property="drjava-jar-exists" file="${drjava-jar}" />
     <fail message="${drjava-jar} does not exist" unless="drjava-jar-exists" />
@@ -781,18 +781,18 @@
     <available property="jar-exists" file="${ant.project.name}.jar" />
     <fail message="Can't find ${ant.project.name}.jar" unless="jar-exists" />
   </target>
-  
+
   <target name="assert-clover-jar-exists">
     <available property="clover-jar-exists" file="${clover-jar}" />
     <fail message="${clover-jar} does not exist" unless="clover-jar-exists" />
   </target>
-  
+
   <target name="assert-findbugs-exists">
     <available property="findbugs-exists" file="${findbugs-home}/lib/findbugs.jar" />
     <fail message="${findbugs-home}/lib/findbugs.jar does not exist" unless="findbugs-exists" />
   </target>
-  
-  
+
+
   <target name="resolve-development-value">
     <condition property="development-value" value="true">
       <istrue value="${is-development}" />
@@ -800,7 +800,7 @@
     <!-- else... -->
     <property name="development-value" value="false" />
   </target>
-  
+
   <target name="resolve-jvm-args">
     <condition property="jvm-args" value="-server">
       <istrue value="${force-server}" />
@@ -808,7 +808,7 @@
     <!-- else... -->
     <property name="jvm-args" value="" />
   </target>
-  
+
   <target name="resolve-test-formatter-class">
     <condition property="test-formatter-class"
                value="edu.rice.cs.plt.ant.QuietJUnitResultFormatter">
@@ -834,7 +834,7 @@
     <property name="test-formatter-class"
               value="edu.rice.cs.plt.ant.OneLineJUnitResultFormatter" />
   </target>
-  
+
   <target name="resolve-version-tag" depends="resolve-svn-revision">
     <!-- Get a timestamp based on GMT, rather than local time -->
     <tstamp>
@@ -844,7 +844,7 @@
     </tstamp>
     <property name="version-tag"
               value="${ant.project.name}${tag-append}-${DSTAMP}-r${svn-revision}" />
-  </target>  
+  </target>
 
   <!-- Sets is-modified if "svn status" has non-empty output. -->
   <target name="resolve-is-modified" depends="clean">
@@ -857,11 +857,10 @@
       </not>
     </condition>
   </target>
-  
+
   <!-- Sets svn-revision to the current "Last Changed Rev" of "svn info". -->
   <target name="resolve-svn-revision">
-    <!--
-    <exec executable="svn" failonerror="yes" output="svn-info.txt">
+  <!--   <exec executable="svn" failonerror="yes" output="svn-info.txt">
       <arg value="info" />
     </exec>
     <loadfile property="svn-revision" srcfile="svn-info.txt">
@@ -873,10 +872,9 @@
         <striplinebreaks/>
       </filterchain>
     </loadfile>
-    <delete file="svn-info.txt" />
-    -->
+    <delete file="svn-info.txt" /> -->
   </target>
-  
+
 
   <!-- Sets "already-generated" if "generate-file" is more recent than "generate-sourcefile";
        otherwise, the out-of-date target file is deleted (if it exists).  Note that, since
@@ -900,15 +898,15 @@
     <available file="${generate-file}" property="already-generated" />
   </target>
 
-  <!-- Sets "already-generated" if "generate-dir" was created (or modified) more recently 
-       than "generate-sourcefile".  Note that, since properties can only be set once, this 
+  <!-- Sets "already-generated" if "generate-dir" was created (or modified) more recently
+       than "generate-sourcefile".  Note that, since properties can only be set once, this
        should happen underneath an "antcall". -->
   <target name="check-generate-dir-from-file">
     <uptodate property="already-generated" targetfile="${generate-dir}" srcfile="${generate-sourcefile}" />
   </target>
-  
-  <!-- Sets "already-generated" if "generate-dir" was created (or modified) more recently 
-       than everything in "generate-sourcedir".  Note that, since properties can only be 
+
+  <!-- Sets "already-generated" if "generate-dir" was created (or modified) more recently
+       than everything in "generate-sourcedir".  Note that, since properties can only be
        set once, this should happen underneath an "antcall". -->
   <target name="check-generate-dir-from-dir">
     <!-- Unfortunately, a bug in uptodate prevents this from working properly,
