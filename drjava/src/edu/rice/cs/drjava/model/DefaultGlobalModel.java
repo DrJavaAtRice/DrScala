@@ -1,29 +1,29 @@
 /*BEGIN_COPYRIGHT_BLOCK
  *
  * Copyright (c) 2001-2017, JavaPLT group at Rice University (drjava@rice.edu).  All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
  *    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following
  *      disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the 
+ *    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
  *      following disclaimer in the documentation and/or other materials provided with the distribution.
- *    * Neither the names of DrJava, DrScala, the JavaPLT group, Rice University, nor the names of its contributors may 
+ *    * Neither the names of DrJava, DrScala, the JavaPLT group, Rice University, nor the names of its contributors may
  *      be used to endorse or promote products derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * This software is Open Source Initiative approved Open Source Software.
  * Open Source Initative Approved is a trademark of the Open Source Initiative.
- * 
+ *
  * This file is part of DrScala.  Download the current version of this project from http://www.drscala.org/.
- * 
+ *
  * END_COPYRIGHT_BLOCK*/
 
 package edu.rice.cs.drjava.model;
@@ -81,34 +81,34 @@ import edu.rice.cs.util.swing.Utilities;
 import static edu.rice.cs.plt.debug.DebugUtil.debug;
 
 /** Handles the bulk of DrScala's program logic. The UI components interface with the GlobalModel through its public
-  * methods, and the GlobalModel responds via the GlobalModelListener interface. This removes the dependency on the 
+  * methods, and the GlobalModel responds via the GlobalModelListener interface. This removes the dependency on the
   * UI for the logical flow of the program's features.  With the current implementation, we can finally test the compile
   * command of DrJava, along with many other things. <p>
   * @version $Id: DefaultGlobalModel.java 5727 2012-09-30 03:58:32Z rcartwright $
   */
 public class DefaultGlobalModel extends AbstractGlobalModel {
-  
+
   /* FIELDS */
   public static int BUSY_WAIT_DELAY = 500;  // wait 500 milliseconds between attempts to get the starting interpreter
-  
+
   /* static Log _log inherited from AbstractGlobalModel */
-  
+
   /* Interpreter fields */
-  
+
   /** The document used in the Interactions model. */
   protected final InteractionsDJDocument _interactionsDocument;
-  
-  /** RMI interface to the Interactions JVM. 
+
+  /** RMI interface to the Interactions JVM.
     * TODO: Should all such communication be routed through the InteractionsModel?*/
-  final MainJVM _mainJVM; 
-  
+  final MainJVM _mainJVM;
+
   private final Thread _interpreterJVMStarter; // thread that invokes _jvm.startInterpreterJVM()
-  
+
   /** Interface between the InteractionsDocument and the JavaInterpreter, which runs in a separate JVM. */
   protected final DefaultInteractionsModel _interactionsModel;
-  
+
   /** Null interactions listener (except for waitUntilDone) attached to interactions model */
-  protected DefaultInteractionsListener _interactionsListener = new DefaultInteractionsListener(); 
+  protected DefaultInteractionsListener _interactionsListener = new DefaultInteractionsListener();
   private final CompilerListener _compilerListener = new DummyCompilerListener() {
     public void compileStarted() {
       assert EventQueue.isDispatchThread();
@@ -117,11 +117,11 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
       _log.log("In _compilerListener.compileStarted, calling ResetInterpreter in _interactionsListener");
       /* asynchronously reset interpreter using updated class path while compilation occurs; must run outside the event
        * dispatch thread. */
-      new Thread(new Runnable() { public void run() { 
-        _interactionsModel.resetInterpreter(_interactionsModel.getWorkingDirectory()); } 
+      new Thread(new Runnable() { public void run() {
+        _interactionsModel.resetInterpreter(_interactionsModel.getWorkingDirectory()); }
       }).start();
     }
-    
+
     public void compileEnded(File workDir, List<? extends File> excludedFiles) {
       /* interactions is asynchronously reset in parallel with compilation. */
       _log.log("Executing _compilerListener.compileEnded");
@@ -129,31 +129,31 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
   };
 
   // ---- Compiler Fields ----
-  
+
   /** CompilerModel manages all compiler functionality. */
   private final CompilerModel _compilerModel;
-  
+
 //  /** Whether or not to reset the interactions JVM after compiling.  Should only be false in test cases. */
 //  private volatile boolean _resetAfterCompile = true;
-  
+
   /** Number of errors in last compilation.  compilerModel._numErrors is trashed when the compile model is reset. */
   private volatile int _numCompilerErrors = 0;
-  
+
   /* JUnit Fields */
-  
+
   /** JUnitModel manages all JUnit functionality. */
   private final DefaultJUnitModel _junitModel;
-  
+
   /* Scaladoc Fields */
-  
+
   /** Manages all Scaladoc functionality. */
   protected volatile ScaladocModel _scaladocModel;
-  
+
   /* Constructors */
   /** Constructs a new GlobalModel. Creates a new MainJVM and starts its Interpreter JVM. */
   public DefaultGlobalModel() {
     _log.log("Constructing DefaultGlobalModel");
-    
+
     Iterable<? extends JDKToolsLibrary> tools = findLibraries();
     List<CompilerInterface> compilers = new LinkedList<CompilerInterface>();
 
@@ -170,38 +170,38 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
     }
     if (_scaladocModel == null) { _scaladocModel = new NoScaladocAvailable(this); }
 //    Utilities.show("_scaladocModel = " + _scaladocModel);
-    
+
     File workDir = Utilities.TEST_MODE ? new File(System.getProperty("user.home")) : getWorkingDirectory();
     _mainJVM = new MainJVM(this);
 //    AbstractMasterJVM._log.log(this + " has created a new MainJVM");
-    _compilerModel = new DefaultCompilerModel(this, compilers);     
+    _compilerModel = new DefaultCompilerModel(this, compilers);
     _junitModel = new DefaultJUnitModel(_mainJVM, _compilerModel, this);
     _interactionsDocument = new InteractionsDJDocument(_notifier);
-    
+
     _interactionsModel = new DefaultInteractionsModel(this, _mainJVM, _interactionsDocument, workDir);
     _interactionsModel.addListener(_interactionsListener);
     /* _mainJVM creates dummy interactions and JUnit models when it starts; update these fields */
     _mainJVM.setInteractionsModel(_interactionsModel);
     _mainJVM.setJUnitModel(_junitModel);
-    
+
     // Chain notifiers so that all events also go to GlobalModelListeners.
     _interactionsModel.addListener(_notifier);
     _compilerModel.addListener(_notifier);
     _junitModel.addListener(_notifier);
     _scaladocModel.addListener(_notifier);
-    
+
     // Listen to compiler model to clear interactions as soon as compilation starts.
     // Is registration of _notifier and _clearInteractionsListerner order dependent?
     _compilerModel.addListener(_compilerListener);
-    
+
     _log.log("In DefaultGlobalModel constructor, listeners added");
-    
+
     _interpreterJVMStarter = new Thread("Start interpreter JVM") {
       public void run() { _mainJVM.startInterpreterJVM(); }
     };
     _log.log("In DefaultGlobalModel constructor, starting InterpreterJVM");
     _interpreterJVMStarter.start();  // does not block!
-    _log.log("DefaultGlobalModel construction complete"); 
+    _log.log("DefaultGlobalModel construction complete");
   }
 
   // makes the version coarser, if desired: if DISPLAY_ALL_COMPILER_VERSIONS is disabled, then only
@@ -213,11 +213,11 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
     }
     return tVersion;
   }
-  
+
   // A pair of version and descriptor.
   // If the descriptor is something different than JDKDescriptor.NONE, then this pair will always
   // return false for equals(), except if it is compared to the identical pair.
-  private static class LibraryKey implements Comparable<LibraryKey> {    
+  private static class LibraryKey implements Comparable<LibraryKey> {
     public static final int PRIORITY_BUILTIN = 4;  // Currenty the Scala 2.12.0 compiler
     public static final int PRIORITY_SEARCH = 1;
     public static final int PRIORITY_RUNTIME = 2;
@@ -227,12 +227,12 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
     protected final int _priority; // as above
     protected final JavaVersion.FullVersion _first;
     protected final JDKDescriptor _second;
-    
+
     public LibraryKey(int priority, JavaVersion.FullVersion first, JDKDescriptor second) {
       _priority = priority;
       _first = first;
       _second = second;
-    }    
+    }
 
     public boolean equals(Object o) {
       // identity --> true
@@ -242,24 +242,24 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
       else {
         LibraryKey cast = (LibraryKey) o;
         // only true if both versions are equal and both descriptors are NONE
-        return 
+        return
           (_priority == cast._priority) &&
           (_first == null ? cast._first == null : _first.equals(cast._first)) &&
           (_second == null ? cast._second == null :
              ((_second==JDKDescriptor.NONE) && (cast._second==JDKDescriptor.NONE)));
       }
     }
-    
+
     public String toString() {
-      return "priority " + _priority + ", version " + _first.versionString() + " " + _first.maintenance() + " " + 
+      return "priority " + _priority + ", version " + _first.versionString() + " " + _first.maintenance() + " " +
         _first.update() + " " + _first.vendor() + " " + _first.location() + ", descriptor " + _second.getName();
     }
-    
+
     public int hashCode() {
-      return  _priority ^ (_first == null ? 0 : _first.hashCode()) ^  (_second == null ? 0 : _second.hashCode() << 1) ^ 
+      return  _priority ^ (_first == null ? 0 : _first.hashCode()) ^  (_second == null ? 0 : _second.hashCode() << 1) ^
         getClass().hashCode();
     }
-    
+
     public int compareTo(LibraryKey o) {
       int result = _priority - o._priority;
       if (result == 0) {
@@ -286,32 +286,32 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
       return result;
     }
   }
-  
+
   // return a new version-descriptor pair for a library
   private LibraryKey getLibraryKey(int priority, JDKToolsLibrary lib) {
     return new LibraryKey(priority, coarsenVersion(lib.version()), lib.jdkDescriptor());
   }
-  
+
   private Iterable<JDKToolsLibrary> findLibraries() {
     // Order to return: config setting, runtime (if different version), from search (if different versions)
-    
+
     // We give priority to libraries that support Scala.
-    
+
     // map is sorted first by LibraryKey.priority and second by version, lowest-to-highest
     Map<LibraryKey, JDKToolsLibrary> results = new TreeMap<LibraryKey, JDKToolsLibrary>();
-    
+
     JarJDKToolsLibrary._log.log("DefaultGlobalModel.findLibraries() called; " + JavaVersion.CURRENT + " is running");
     File configTools = DrScala.getConfig().getSetting(JAVAC_LOCATION);
     if (configTools != null && configTools != FileOps.NULL_FILE) {
       JDKToolsLibrary fromConfig = JarJDKToolsLibrary.makeFromFile(configTools, this, JDKDescriptor.NONE);
-      if (fromConfig.isValid()) { 
+      if (fromConfig.isValid()) {
         JarJDKToolsLibrary._log.log("In DefaultGlobalModel.findLibraries, adding: " + fromConfig  + " from config");
         results.put(getLibraryKey(LibraryKey.PRIORITY_CONFIG, fromConfig), fromConfig);
       }
       else { JarJDKToolsLibrary._log.log("In DefaultGlobalModel.findLibraries, " + fromConfig + " is invalid"); }
     }
     else { JarJDKToolsLibrary._log.log("In DefaultGlobalModel.findLibraries, JAVAC_LOCATION not set"); }
-    
+
     Iterable<JDKToolsLibrary> allFromRuntime = JDKToolsLibrary.makeFromRuntime(this);
 
     for(JDKToolsLibrary fromRuntime: allFromRuntime) {
@@ -325,9 +325,9 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
     _log.log("In DefaultGlobalModel.findLibraries, compiler results = " + results);
     return IterUtil.reverse(results.values());
   }
-  
+
 //  public void junitAll() { _state.junitAll(); }
-  
+
   /** Sets the build directory for a project. */
   public void setBuildDirectory(File f) {
     _state.setBuildDirectory(f);
@@ -335,34 +335,34 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
       // This transaction appears redundant since the information is passed to the interpreter JVM after each compilation. */
       _mainJVM.addInteractionsClassPath(IOUtil.attemptAbsoluteFile(f));
     }
-    
+
     _notifier.projectBuildDirChanged();
     setProjectChanged(true);
 //    setClassPathChanged(true);
   }
-  
+
   // ----- METHODS -----
-  
+
   /** @return the interactions model. */
   public DefaultInteractionsModel getInteractionsModel() { return _interactionsModel; }
-  
+
   /** @return InteractionsDJDocument in use by the InteractionsDocument. */
   public InteractionsDJDocument getSwingInteractionsDocument() { return _interactionsDocument; }
-  
+
   public InteractionsDocument getInteractionsDocument() { return _interactionsModel.getDocument(); }
-  
+
   /** Gets the CompilerModel, which provides all methods relating to compilers. */
   public CompilerModel getCompilerModel() { return _compilerModel; }
-  
+
   /** Gets the JUnitModel, which provides all methods relating to JUnit testing. */
   public JUnitModel getJUnitModel() { return _junitModel; }
-  
+
   /** Gets the ScaladocModel, which provides all methods relating to Scaladoc. */
   public ScaladocModel getScaladocModel() { return _scaladocModel; }
-  
+
   public int getNumCompilerErrors() { return _numCompilerErrors; }
   public void setNumCompilerErrors(int num) { _numCompilerErrors = num; }
-  
+
   /** Prepares this model to be thrown away.  Never called in practice outside of quit(), except in tests. */
   public void dispose() {
     ensureJVMStarterFinished();
@@ -370,69 +370,69 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
     _notifier.removeAllListeners();  // removes the global model listeners!
   }
 
-  /** Ensures that the _interpreterJVMStarter thread has executed. Never called in practice outside of 
+  /** Ensures that the _interpreterJVMStarter thread has executed. Never called in practice outside of
     * GlobalModelTestCase.setUp(). */
   public void ensureJVMStarterFinished() {
     try { _interpreterJVMStarter.join(); } // some tests were reach this point before _jvmStarter has completed
     catch (InterruptedException e) { throw new UnexpectedException(e); }
   }
-  
+
   /** Disposes of external resources. Kills the interpreter JVM. */
   public void disposeExternalResources() { _mainJVM.stopInterpreterJVM(); }
-  
+
   /** Convenience method for case where workingDirectory has not changed. */
   public void resetInterpreter() { resetInterpreter(_interactionsModel.getWorkingDirectory()); }
   /** Convenience method for case where workingDirectory has not changed. Must not run in event dispatch thread. */
   public void hardResetInterpreter() {
     hardResetInterpreter(_interactionsModel.getWorkingDirectory());
   }
-  
+
   /** Synchronously reset the interpreter in the interactions pane; DOES NOT RETURN UNTIL RESET IS COMPLETE */
   public void resetInterpreter(File wd) {
 //    assert Utilities.TEST_MODE || ! EventQueue.isDispatchThread();
     /* Calling invokeAndWait ensures that non-blocking hardResetInterpreter runs before waitResetDone is executed. */
-    Utilities.invokeAndWait(new Runnable() { public void run() {_interactionsModel.resetInterpreter(wd);}}); 
+    Utilities.invokeAndWait(new Runnable() { public void run() {_interactionsModel.resetInterpreter(wd);}});
     _interactionsListener.waitResetDone();
   }
 
-   /** Synchronously reset the interpreter in the interactions pane by killing the interpreter JVM; 
+   /** Synchronously reset the interpreter in the interactions pane by killing the interpreter JVM;
      * DOES NOT RETURN UNTIL RESET IS COMPLETE.  Must not run in the event dispatch thread which is used for
      * notication!. */
   public void hardResetInterpreter(File wd) {
     assert ! EventQueue.isDispatchThread();
     /* Calling invokeAndWait ensures that non-blocking hardResetInterpreter runs before waitResetDone is executed. */
-    Utilities.invokeAndWait(new Runnable() { public void run() { 
+    Utilities.invokeAndWait(new Runnable() { public void run() {
       _interactionsModel.hardResetInterpreter(_interactionsModel.getWorkingDirectory()); }});
-    _log.log("In DefaultGlobalModel.hardInterpreter(" + wd + 
+    _log.log("In DefaultGlobalModel.hardInterpreter(" + wd +
              "), waiting for interpreter in newly created interpreter JVM to start");
     /* WARNING: locks this thread until reset is complete. TODO: set up this wait to timeout in case new interpreter JVM cannot be created. */
     _interactionsListener.waitResetDone();
   }
-    
+
   /** Interprets the current given text at the prompt in the interactions pane. */
   public void interpretCurrentInteraction() { _interactionsModel.interpretCurrentInteraction(); }
-  
+
   /** Interprets file selected in the FileOpenSelector. Assumes strings have no trailing whitespace. Interpretation is
     * aborted after the first error.
     */
-  public void loadHistory(final FileOpenSelector selector) { 
-    Utilities.invokeLater(new Runnable() { 
-      public void run() { 
-        try {_interactionsModel.loadHistory(selector); } 
+  public void loadHistory(final FileOpenSelector selector) {
+    Utilities.invokeLater(new Runnable() {
+      public void run() {
+        try {_interactionsModel.loadHistory(selector); }
         catch(IOException e) { throw new UnexpectedException(e); }
       }
     });
   }
-  
+
   /** Loads the history/histories from the given selector. */
   public InteractionsScriptModel loadHistoryAsScript(FileOpenSelector selector)
     throws IOException, OperationCanceledException {
     return _interactionsModel.loadHistoryAsScript(selector);
   }
-  
+
   /** Clears the interactions history */
   public void clearHistory() { _interactionsModel.getDocument().clearHistory(); }
-  
+
   /** Saves the unedited version of the current history to a file
     * @param selector File to save to
     */
@@ -447,62 +447,62 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
   public void saveConsoleCopy(ConsoleDocument doc, FileSaveSelector selector) throws IOException {
     doc.saveCopy(selector);
   }
-  
+
   /** Saves the edited version of the current history to a file
     * @param selector File to save to
-    * @param editedVersion Edited verison of the history which will be saved to file instead of the lines saved in 
+    * @param editedVersion Edited verison of the history which will be saved to file instead of the lines saved in
     *        the history. The saved file will still include any tags needed to recognize it as a history file.
     */
   public void saveHistory(FileSaveSelector selector, String editedVersion) throws IOException {
     _interactionsModel.getDocument().saveHistory(selector, editedVersion);
   }
-  
+
   /** Returns the entire history as a String with semicolons as needed. */
   public String getHistoryAsStringWithSemicolons() {
     return _interactionsModel.getDocument().getHistoryAsStringWithSemicolons();
   }
-  
+
   /** Returns the entire history as a String. */
   public String getHistoryAsString() {
     return _interactionsModel.getDocument().getHistoryAsString();
   }
-  
+
   // ---------- ConcreteOpenDefDoc inner class ----------
-  
+
   /** Inner class to handle operations on each of the open DefinitionsDocuments by the GlobalModel. <br><br>
     * This was at one time called the <code>DefinitionsDocumentHandler</code>
     * but was renamed (2004-Jun-8) to be more descriptive/intuitive.
     */
-  class ConcreteOpenDefDoc extends AbstractGlobalModel.ConcreteOpenDefDoc {    
+  class ConcreteOpenDefDoc extends AbstractGlobalModel.ConcreteOpenDefDoc {
     /** Standard constructor for a document read from a file.  Initializes this ODD's DD.
       * @param f file describing DefinitionsDocument to manage
       */
     ConcreteOpenDefDoc(File f) {
       super(f);
-      
+
       // update the syntax highlighting for this document
       // can't be done in AbstractGlobalModel.ConcreteOpenDefDoc because getCompilerModel is not supported
       updateSyntaxHighlighting();
     }
-    
+
     /* Standard constructor for a new document (no associated file) */
     ConcreteOpenDefDoc(NullFile f) { super(f);
-      
+
       // update the syntax highlighting for this document
       // can't be done in AbstractGlobalModel.ConcreteOpenDefDoc because getCompilerModel is not supported
       updateSyntaxHighlighting();
     }
-    
+
     /** Starting compiling this document.  Used only for unit testing.  Only rus in the event thread. */
-    public void startCompile() throws IOException { 
+    public void startCompile() throws IOException {
       assert EventQueue.isDispatchThread();
-      _compilerModel.compile(ConcreteOpenDefDoc.this); 
+      _compilerModel.compile(ConcreteOpenDefDoc.this);
     }
-    
+
     private volatile InteractionsListener _runMain;
-    
+
     /** Runs the main method in this document in the interactions pane after resetting interactions with the source
-      * root for this document as the working directory.  Warns the use if the class files for the doucment are not 
+      * root for this document as the working directory.  Warns the use if the class files for the doucment are not
       * up to date.  Fires an event to signal when execution is about to begin.
       * NOTE: this code normally runs in the event thread; it cannot block waiting for an event that is triggered by
       * event thread execution!
@@ -510,28 +510,28 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
       * single quotes and curly braces, for example, are special. To write single quotes, you need to double them.
       * To write curly braces, you need to enclose them in single quotes. Example:
       * MessageFormat.format("Abc {0} ''foo'' '{'something'}'", "def") returns "Abc def 'foo' {something}".
-      * 
+      *
       * @param command  the command to run, with {0} indicating the place where the class name will be written
       * @param qualifiedClassName  the qualified name of the class (in this document) to run.  If NULL, it is the name
       *                             of the top level class.
-      * 
+      *
       * @exception ClassNameNotFoundException propagated from getFirstTopLevelClass()
       * @exception IOException propagated from GlobalModel.compileAll()
       */
-    protected void _runInInteractions(final String command, String qualifiedClassName) 
+    protected void _runInInteractions(final String command, String qualifiedClassName)
       throws ClassNameNotFoundException, IOException {
-      
+
       assert EventQueue.isDispatchThread();
-      
+
       _notifier.prepareForRun(ConcreteOpenDefDoc.this);
-      
+
       String tempClassName = null;
-      
+
       if(qualifiedClassName == null)
         tempClassName = getDocument().getQualifiedClassName();
       else
         tempClassName = qualifiedClassName;
-      
+
       // Get the class name for this document, the first top level class in the document.
       final String className = tempClassName;
       final InteractionsDocument iDoc = _interactionsModel.getDocument();
@@ -539,7 +539,7 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
         iDoc.insertBeforeLastPrompt(DOCUMENT_OUT_OF_SYNC_MSG, InteractionsDocument.ERROR_STYLE);
         return;
       }
-      
+
       _runMain = new DefaultInteractionsListener() {
         public void interpreterReady() {
           /* Prevent listener from running twice.
@@ -547,31 +547,31 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
            * would be removed AFTER the read lock of the notifier had been released [archaic].  But it did not work.
            * Now removeListener has been rewritten but it only runs in the event thread. Removal is done
            * as soon as possible. */
-          
+
           _interactionsModel.removeListener(_runMain);  // listener cannot run
-          
+
         }
       };
 
       File oldWorkDir = _interactionsModel.getWorkingDirectory();
       _interactionsModel.addListener(_runMain);
-      
+
       File workDir;
       workDir = getWorkingDirectory();
-      
+
       // Reset interactions to the working directory
       resetInterpreter(workDir);
     }
-    
+
     /** Runs the main method in this document in the interactions pane after resetting interactions with the source
-      * root for this document as the working directory.  Warns the use if the class files for the doucment are not 
+      * root for this document as the working directory.  Warns the use if the class files for the doucment are not
       * up to date.  Fires an event to signal when execution is about to begin.
       * NOTE: this code normally runs in the event thread; it cannot block waiting for an event that is triggered by
       * event thread execution!
-      * 
+      *
       * @param qualifiedClassName  the qualified name of the class (in this document) to run.  If NULL, it is the name
       *                            of the top level class.
-      * 
+      *
       * @exception ClassNameNotFoundException propagated from getFirstTopLevelClass()
       * @exception IOException propagated from GlobalModel.compileAll()
       */
@@ -579,27 +579,28 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
     //   _runInInteractions("java {0}", qualifiedClassName);
     // }
     public void runMain(String qualifiedClassName) throws ClassNameNotFoundException, IOException {
-      // runs the main method of the standalone singleton object in this document, with {0} indicating the place where the object name 
-      // will be written
+      // runs the main method of the standalone singleton object in this document, with {0} indicating the place where the object name will be written
+
       _runInInteractions("{0}.main(null)", qualifiedClassName);
     }
-    
+
+
     /** Runs this document as applet in the interactions pane after resetting interactions with the source
-      * root for this document as the working directory.  Warns the use if the class files for the doucment are not 
+      * root for this document as the working directory.  Warns the use if the class files for the doucment are not
       * up to date.  Fires an event to signal when execution is about to begin.
       * NOTE: this code normally runs in the event thread; it cannot block waiting for an event that is triggered by
       * event thread execution!
-      * 
+      *
       * @param qualifiedClassName  the qualified name of the class (in this document) to run.  If NULL, it is the name
       *                            of the top level class.
-      * 
+      *
       * @exception ClassNameNotFoundException propagated from getFirstTopLevelClass()
       * @exception IOException propagated from GlobalModel.compileAll()
       */
     public void runApplet(String qualifiedClassName) throws ClassNameNotFoundException, IOException {
       _runInInteractions("applet {0}", qualifiedClassName);
     }
-    
+
     /** Runs this document, and tries to be smart about it. It detects if the class is a regular Java class with a
       * main method, if it is an applet, or if it is an ACM Java Task Force program. It runs the program appropriately
       * in the interactions pane after resetting interactions with the source root for this document as the
@@ -607,24 +608,24 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
       * Fires an event to signal when execution is about to begin.
       * NOTE: this code normally runs in the event thread; it cannot block waiting for an event that is triggered by
       * event thread execution!
-      * 
+      *
       * @param qualifiedClassName  the qualified name of the class (in this document) to run.  If NULL, it is the name
       *                            of the top level class.
-      * 
+      *
       * @exception ClassNameNotFoundException propagated from getFirstTopLevelClass()
       * @exception IOException propagated from GlobalModel.compileAll()
       */
     public void runSmart(String qualifiedClassName) throws ClassNameNotFoundException, IOException {
       _runInInteractions("run {0}", qualifiedClassName);
     }
-    
+
     /** Runs JUnit on the current document.  Requires that all source documents are compiled before proceeding. */
     public void startJUnit() throws ClassNotFoundException, IOException {
       _log.log("In DefaultGlobalModel, startJUnit() called; calling junit(" + this + ") in " + _junitModel);
-      _junitModel.junit(this); 
+      _junitModel.junit(this);
     }
-    
-    /** Generates Scaladoc for this document, saving the output to a temporary directory.  The location is provided to 
+
+    /** Generates Scaladoc for this document, saving the output to a temporary directory.  The location is provided to
       * the scaladocEnded event on the given listener.
       * java@param saver FileSaveSelector for saving the file if it needs to be saved
       */
@@ -633,20 +634,20 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
       _scaladocModel.scaladocDocument(this, saver);
     }
   }
-  
+
   /** Creates a ConcreteOpenDefDoc for a new DefinitionsDocument.
     * @return OpenDefinitionsDocument object for a new document
     */
   protected ConcreteOpenDefDoc _createOpenDefinitionsDocument(NullFile f) { return new ConcreteOpenDefDoc(f); }
-  
+
   /** Creates a ConcreteOpenDefDoc for a given file f
     * @return OpenDefinitionsDocument object for f
     */
-  protected ConcreteOpenDefDoc _createOpenDefinitionsDocument(File f) throws IOException { 
+  protected ConcreteOpenDefDoc _createOpenDefinitionsDocument(File f) throws IOException {
     if (! f.exists()) throw new FileNotFoundException("file " + f + " cannot be found");
-    return new ConcreteOpenDefDoc(f); 
+    return new ConcreteOpenDefDoc(f);
   }
-  
+
   /* NOTE: this method appears redundant because the interactions class path is updated by the compilation process. */
   /** Adds the source root for doc to the interactions classpath; this function is a helper to _openFiles.
     * @param doc the document to add to the classpath
@@ -663,44 +664,44 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
     }
   }
 
-  /** Get the intended class path which may differ from the current class path in the interpreter JVM.  Used before 
+  /** Get the intended class path which may differ from the current class path in the interpreter JVM.  Used before
     * compilation.  TODO: Ensure that this is used wherever appropriate.
     */
   public List<File> getClassPath() {
     ArrayList<File> result = new ArrayList<File>();
-    
+
     if (isProjectActive()) {
       File buildDir = getBuildDirectory();
-      if (buildDir != null && buildDir != FileOps.NULL_FILE) { 
-        result.add(buildDir); 
+      if (buildDir != null && buildDir != FileOps.NULL_FILE) {
+        result.add(buildDir);
       }
-      
-      /* We prefer to assume the project root is the project's source root, rather than checking *every* file in the 
-       * project for its source root.  This is a bit problematic, because "Compile Project" won't care if the user 
-       * has multiple source roots (or even just a single "src" subdirectory), and the user in this situation (assuming 
-       * the build dir is null) wouldn't notice a problem until trying to access the compiled classes in the 
+
+      /* We prefer to assume the project root is the project's source root, rather than checking *every* file in the
+       * project for its source root.  This is a bit problematic, because "Compile Project" won't care if the user
+       * has multiple source roots (or even just a single "src" subdirectory), and the user in this situation (assuming
+       * the build dir is null) wouldn't notice a problem until trying to access the compiled classes in the
        * Interactions.
        */
       File projRoot = getProjectRoot();
-      if (projRoot != null && projRoot != FileOps.NULL_FILE) { 
+      if (projRoot != null && projRoot != FileOps.NULL_FILE) {
         result.add(projRoot);
         _log.log("Project root is " + projRoot);
       }
-      
+
       List<AbsRelFile> projectExtras = getExtraProjectClassPath();
-      if (projectExtras != null && projectExtras != FileOps.NULL_FILE) { 
-        result.addAll(projectExtras); 
+      if (projectExtras != null && projectExtras != FileOps.NULL_FILE) {
+        result.addAll(projectExtras);
         _log.log("Project Extras " + projectExtras + " added to accumlated result in getClassPath()");
       }
     }
     else { result.addAll(getSourceRootSet()); }
-    
+
     ArrayList<File> globalExtras = DrScala.getConfig().getSetting(EXTRA_CLASSPATH);
-    if (globalExtras != null) { 
-      result.addAll(globalExtras); 
+    if (globalExtras != null) {
+      result.addAll(globalExtras);
       _log.log("Global Extras " + globalExtras + " added to class path");
     }
-    
+
     /* We must add JUnit to the class path.  We do so by including the current JVM's class path (fixed on startup).
      * This is not ideal, because all other classes on the current class path (including all of DrScala's
      * internal classes) are also included.  But we're probably stuck doing something like this if we
@@ -708,17 +709,17 @@ public class DefaultGlobalModel extends AbstractGlobalModel {
      */
     result.addAll(ReflectUtil.SYSTEM_CLASS_PATH);
     _log.log("SYSTEM_CLASS_PATH = " + ReflectUtil.SYSTEM_CLASS_PATH);
-    
+
     _log.log("getClassPath() is returning '" + result + "'");
-    
+
     return result;
   }
-  
+
   /** Returns the current class path actually in use by the Interpreter JVM. */
   public List<File> getInteractionsClassPath() {
     return _mainJVM.getInteractionsClassPath();
   }
-  
+
   /** Ensures that all of the entries in getClassPath() appear in the interactions class path.  Entries are passed
     * to the Scala interpreter in reverse order so that the first entry is the last one passed. Can be called from
     * outside the event handling thread. */

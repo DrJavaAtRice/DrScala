@@ -1,29 +1,29 @@
 /*BEGIN_COPYRIGHT_BLOCK
  *
  * Copyright (c) 2001-2017, JavaPLT group at Rice University (drjava@rice.edu).  All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
  *    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following
  *      disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the 
+ *    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
  *      following disclaimer in the documentation and/or other materials provided with the distribution.
- *    * Neither the names of DrJava, DrScala, the JavaPLT group, Rice University, nor the names of its contributors may 
+ *    * Neither the names of DrJava, DrScala, the JavaPLT group, Rice University, nor the names of its contributors may
  *      be used to endorse or promote products derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * This software is Open Source Initiative approved Open Source Software.
  * Open Source Initative Approved is a trademark of the Open Source Initiative.
- * 
+ *
  * This file is part of DrScala.  Download the current version of this project from http://www.drscala.org/.
- * 
+ *
  * END_COPYRIGHT_BLOCK*/
 
 package edu.rice.cs.drjava.model.javadoc;
@@ -38,7 +38,7 @@ import edu.rice.cs.drjava.model.compiler.CompilerListener;
  * @version $Id: ScaladocListener.java 5594 2012-06-21 11:23:40Z rcartwright $
  */
 public interface ScaladocListener {
-  
+
   /** Called to demand that all files be saved before generating Scaladoc.
    * It is up to the caller of this method to check if the documents have been
    * saved, using IGetDocuments.hasModifiedDocuments().
@@ -47,13 +47,13 @@ public interface ScaladocListener {
   public void saveBeforeScaladoc();
 
   /** Called before attempting Scaladoc, to give the user a chance to compile. Do not continue with Scaladoc if the
-    * user doesn't comoile!
+    * user doesn't compile!
     */
   public void compileBeforeScaladoc(final CompilerListener afterCompile);
-  
+
   /** Called after Scaladoc is started by the GlobalModel. */
   public void scaladocStarted();
-  
+
   /** Called after Scaladoc is finished.
     * @param success whether the Scaladoc operation generated proper output
     * @param destDir  if (success == true) the location where the output was generated, otherwise undefined (null?)
