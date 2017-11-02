@@ -6086,7 +6086,7 @@ public class MainFrame extends SwingFrame implements ClipboardOwner, DropTargetL
     _addMenuItem(scaladocMenu, _openScaladocAction, KEY_OPEN_SCALADOC, updateKeyboardManager);
     _addMenuItem(scaladocMenu, _openScaladocUnderCursorAction, KEY_OPEN_SCALADOC_UNDER_CURSOR, updateKeyboardManager);
     /* Omit scaladoc menu until the actions are implemented correctly. */
-//    toolsMenu.add(scaladocMenu);
+   toolsMenu.add(scaladocMenu);
 
     final JMenu historyMenu = new JMenu("History");
     _addMenuItem(historyMenu, _executeHistoryAction, KEY_EXECUTE_HISTORY, updateKeyboardManager);
@@ -6376,7 +6376,7 @@ public class MainFrame extends SwingFrame implements ClipboardOwner, DropTargetL
     _toolBar.add(_runButton = _createToolbarButton(_runAction));
     _toolBar.add(_junitButton = _createToolbarButton(_junitAllAction));
     /* Omit until action is correctly implemented. */
-//    _toolBar.add(_createToolbarButton(_scaladocAllAction));
+   _toolBar.add(_createToolbarButton(_scaladocAllAction));
 
     // DrScala Errors
     _toolBar.addSeparator();
@@ -6931,7 +6931,7 @@ public class MainFrame extends SwingFrame implements ClipboardOwner, DropTargetL
               m.add(Utilities.createDelegateAction("Compile File", _compileAction));
               m.add(Utilities.createDelegateAction("Test File", _junitAction));
               /* Omit until the action in correctly implemented. */
-//              m.add(Utilities.createDelegateAction("Preview Scaladoc for File", _scaladocCurrentAction));
+             m.add(Utilities.createDelegateAction("Preview Scaladoc for File", _scaladocCurrentAction));
               m.add(Utilities.createDelegateAction("Run File", _runAction));
               /* Omit until the action is sensibly defined and correctly implemented. */
 //              m.add(Utilities.createDelegateAction("Run File as Applet", _runAppletAction));
